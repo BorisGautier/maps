@@ -86,6 +86,8 @@ abstract class MapboxGlPlatform {
 
   Future<void> removeLayer(String imageLayerId);
 
+  Future<void> setFilter(String layerId, dynamic filter);
+
   Future<Point> toScreenLocation(LatLng latLng);
 
   Future<List<Point>> toScreenLocationBatch(Iterable<LatLng> latLngs);
@@ -110,6 +112,7 @@ abstract class MapboxGlPlatform {
       String? sourceLayer,
       double? minzoom,
       double? maxzoom,
+      dynamic filter,
       required bool enableInteraction});
 
   Future<void> addLineLayer(
@@ -118,6 +121,7 @@ abstract class MapboxGlPlatform {
       String? sourceLayer,
       double? minzoom,
       double? maxzoom,
+      dynamic filter,
       required bool enableInteraction});
 
   Future<void> addCircleLayer(
@@ -126,6 +130,7 @@ abstract class MapboxGlPlatform {
       String? sourceLayer,
       double? minzoom,
       double? maxzoom,
+      dynamic filter,
       required bool enableInteraction});
 
   Future<void> addFillLayer(
@@ -134,6 +139,7 @@ abstract class MapboxGlPlatform {
       String? sourceLayer,
       double? minzoom,
       double? maxzoom,
+      dynamic filter,
       required bool enableInteraction});
 
   Future<void> addRasterLayer(

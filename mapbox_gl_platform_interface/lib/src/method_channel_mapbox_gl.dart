@@ -2,7 +2,7 @@ part of mapbox_gl_platform_interface;
 
 class MethodChannelMapboxGl extends MapboxGlPlatform {
   late MethodChannel _channel;
-  static bool useHybridComposition = true;
+  static bool useHybridComposition = false;
 
   Future<dynamic> _handleMethodCall(MethodCall call) async {
     switch (call.method) {
@@ -37,6 +37,7 @@ class MethodChannelMapboxGl extends MapboxGlPlatform {
 
         final double deltaLat = call.arguments['deltaLat'];
         final double deltaLng = call.arguments['deltaLng'];
+        final String eventType = call.arguments['eventType'];
 
         onFeatureDraggedPlatform({
           'id': id,
@@ -44,6 +45,7 @@ class MethodChannelMapboxGl extends MapboxGlPlatform {
           'origin': LatLng(originLat, originLng),
           'current': LatLng(currentLat, currentLng),
           'delta': LatLng(deltaLat, deltaLng),
+          'eventType': eventType,
         });
         break;
 
@@ -473,6 +475,16 @@ class MethodChannelMapboxGl extends MapboxGlPlatform {
   }
 
   @override
+  Future<void> setFilter(String layerId, dynamic filter) async {
+    try {
+      return await _channel.invokeMethod('style#setFilter',
+          <String, Object>{'layerId': layerId, 'filter': jsonEncode(filter)});
+    } on PlatformException catch (e) {
+      return new Future.error(e);
+    }
+  }
+
+  @override
   Future<LatLng> toLatLng(Point screenLocation) async {
     try {
       var latLngMap =
@@ -524,6 +536,7 @@ class MethodChannelMapboxGl extends MapboxGlPlatform {
       String? sourceLayer,
       double? minzoom,
       double? maxzoom,
+      dynamic filter,
       required bool enableInteraction}) async {
     await _channel.invokeMethod('symbolLayer#add', <String, dynamic>{
       'sourceId': sourceId,
@@ -532,6 +545,7 @@ class MethodChannelMapboxGl extends MapboxGlPlatform {
       'sourceLayer': sourceLayer,
       'minzoom': minzoom,
       'maxzoom': maxzoom,
+      'filter': jsonEncode(filter),
       'enableInteraction': enableInteraction,
       'properties': properties
           .map((key, value) => MapEntry<String, String>(key, jsonEncode(value)))
@@ -545,6 +559,7 @@ class MethodChannelMapboxGl extends MapboxGlPlatform {
       String? sourceLayer,
       double? minzoom,
       double? maxzoom,
+      dynamic filter,
       required bool enableInteraction}) async {
     await _channel.invokeMethod('lineLayer#add', <String, dynamic>{
       'sourceId': sourceId,
@@ -553,6 +568,7 @@ class MethodChannelMapboxGl extends MapboxGlPlatform {
       'sourceLayer': sourceLayer,
       'minzoom': minzoom,
       'maxzoom': maxzoom,
+      'filter': jsonEncode(filter),
       'enableInteraction': enableInteraction,
       'properties': properties
           .map((key, value) => MapEntry<String, String>(key, jsonEncode(value)))
@@ -566,6 +582,7 @@ class MethodChannelMapboxGl extends MapboxGlPlatform {
       String? sourceLayer,
       double? minzoom,
       double? maxzoom,
+      dynamic filter,
       required bool enableInteraction}) async {
     await _channel.invokeMethod('circleLayer#add', <String, dynamic>{
       'sourceId': sourceId,
@@ -574,6 +591,7 @@ class MethodChannelMapboxGl extends MapboxGlPlatform {
       'sourceLayer': sourceLayer,
       'minzoom': minzoom,
       'maxzoom': maxzoom,
+      'filter': jsonEncode(filter),
       'enableInteraction': enableInteraction,
       'properties': properties
           .map((key, value) => MapEntry<String, String>(key, jsonEncode(value)))
@@ -587,6 +605,7 @@ class MethodChannelMapboxGl extends MapboxGlPlatform {
       String? sourceLayer,
       double? minzoom,
       double? maxzoom,
+      dynamic filter,
       required bool enableInteraction}) async {
     await _channel.invokeMethod('fillLayer#add', <String, dynamic>{
       'sourceId': sourceId,
@@ -595,6 +614,7 @@ class MethodChannelMapboxGl extends MapboxGlPlatform {
       'sourceLayer': sourceLayer,
       'minzoom': minzoom,
       'maxzoom': maxzoom,
+      'filter': jsonEncode(filter),
       'enableInteraction': enableInteraction,
       'properties': properties
           .map((key, value) => MapEntry<String, String>(key, jsonEncode(value)))

@@ -107,10 +107,36 @@ class MapboxWebGlPlatform extends MapboxGlPlatform
       _map.getCanvas().style.cursor = 'grabbing';
       var coords = e.lngLat;
       _dragOrigin = LatLng(coords.lat as double, coords.lng as double);
+
+      if (_draggedFeatureId != null) {
+        final current =
+            LatLng(e.lngLat.lat.toDouble(), e.lngLat.lng.toDouble());
+        final payload = {
+          'id': _draggedFeatureId,
+          'point': Point<double>(e.point.x.toDouble(), e.point.y.toDouble()),
+          'origin': _dragOrigin,
+          'current': current,
+          'delta': LatLng(0, 0),
+          'eventType': 'start'
+        };
+        onFeatureDraggedPlatform(payload);
+      }
     }
   }
 
   _onMouseUp(Event e) {
+    if (_draggedFeatureId != null) {
+      final current = LatLng(e.lngLat.lat.toDouble(), e.lngLat.lng.toDouble());
+      final payload = {
+        'id': _draggedFeatureId,
+        'point': Point<double>(e.point.x.toDouble(), e.point.y.toDouble()),
+        'origin': _dragOrigin,
+        'current': current,
+        'delta': current - (_dragPrevious ?? _dragOrigin!),
+        'eventType': 'end'
+      };
+      onFeatureDraggedPlatform(payload);
+    }
     _draggedFeatureId = null;
     _dragPrevious = null;
     _dragOrigin = null;
@@ -126,6 +152,7 @@ class MapboxWebGlPlatform extends MapboxGlPlatform
         'origin': _dragOrigin,
         'current': current,
         'delta': current - (_dragPrevious ?? _dragOrigin!),
+        'eventType': 'drag'
       };
       _dragPrevious = current;
       onFeatureDraggedPlatform(payload);
@@ -630,6 +657,11 @@ class MapboxWebGlPlatform extends MapboxGlPlatform
   }
 
   @override
+  Future<void> setFilter(String layerId, dynamic filter) async {
+    _map.setFilter(layerId, filter);
+  }
+
+  @override
   Future<void> addGeoJsonSource(String sourceId, Map<String, dynamic> geojson,
       {String? promoteId}) async {
     final data = _makeFeatureCollection(geojson);
@@ -671,12 +703,14 @@ class MapboxWebGlPlatform extends MapboxGlPlatform
       String? sourceLayer,
       double? minzoom,
       double? maxzoom,
+      dynamic filter,
       required bool enableInteraction}) async {
     return _addLayer(sourceId, layerId, properties, "circle",
         belowLayerId: belowLayerId,
         sourceLayer: sourceLayer,
         minzoom: minzoom,
         maxzoom: maxzoom,
+        filter: filter,
         enableInteraction: enableInteraction);
   }
 
@@ -687,12 +721,14 @@ class MapboxWebGlPlatform extends MapboxGlPlatform
       String? sourceLayer,
       double? minzoom,
       double? maxzoom,
+      dynamic filter,
       required bool enableInteraction}) async {
     return _addLayer(sourceId, layerId, properties, "fill",
         belowLayerId: belowLayerId,
         sourceLayer: sourceLayer,
         minzoom: minzoom,
         maxzoom: maxzoom,
+        filter: filter,
         enableInteraction: enableInteraction);
   }
 
@@ -703,12 +739,14 @@ class MapboxWebGlPlatform extends MapboxGlPlatform
       String? sourceLayer,
       double? minzoom,
       double? maxzoom,
+      dynamic filter,
       required bool enableInteraction}) async {
     return _addLayer(sourceId, layerId, properties, "line",
         belowLayerId: belowLayerId,
         sourceLayer: sourceLayer,
         minzoom: minzoom,
         maxzoom: maxzoom,
+        filter: filter,
         enableInteraction: enableInteraction);
   }
 
@@ -719,12 +757,14 @@ class MapboxWebGlPlatform extends MapboxGlPlatform
       String? sourceLayer,
       double? minzoom,
       double? maxzoom,
+      dynamic filter,
       required bool enableInteraction}) async {
     return _addLayer(sourceId, layerId, properties, "symbol",
         belowLayerId: belowLayerId,
         sourceLayer: sourceLayer,
         minzoom: minzoom,
         maxzoom: maxzoom,
+        filter: filter,
         enableInteraction: enableInteraction);
   }
 
@@ -764,6 +804,7 @@ class MapboxWebGlPlatform extends MapboxGlPlatform
       String? sourceLayer,
       double? minzoom,
       double? maxzoom,
+      dynamic filter,
       required bool enableInteraction}) async {
     final layout = Map.fromEntries(
         properties.entries.where((entry) => isLayoutProperty(entry.key)));
@@ -779,6 +820,7 @@ class MapboxWebGlPlatform extends MapboxGlPlatform
       if (sourceLayer != null) 'source-layer': sourceLayer,
       if (minzoom != null) 'minzoom': minzoom,
       if (maxzoom != null) 'maxzoom': maxzoom,
+      if (filter != null) 'filter': filter,
     }, belowLayerId);
 
     if (enableInteraction) {
